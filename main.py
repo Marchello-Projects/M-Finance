@@ -5,13 +5,15 @@ import logging
 import hashlib
 import getpass
 
+init(autoreset=True)
+
 hello_text = f'Hello! To get started, create a profile. Current date and time: {datetime.now()}'
 user_db = []
 current_user = None
 
 logging.basicConfig(
     level=logging.DEBUG,
-    filename='M-Finance.log',
+    filename='./M-Finance.log',
     filemode='w',
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
@@ -57,11 +59,11 @@ def main():
         print(f"{Fore.BLUE}88   88   88 88888888  88        88 88'  `88 88'  `88 88'  `88 88'      88ooood8 ")
         print(f"{Fore.BLUE}88   88   88           88        88 88    88 88.  .88 88    88 88.  ... 88.  ... ")
         print(f"{Fore.BLUE}dP   dP   dP           dP        dP dP    dP `88888P8 dP    dP `88888P' `88888P' ")
-        print(f"{Fore.BLUE}oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo{Style.RESET_ALL}")
+        print(f"{Fore.BLUE}oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo")
         print(hello_text)
         print('1. Create profile \n2. Show all profiles \n3. Create financial record \n4. Show all financial records \n5. Delete specific financial record \n6. Delete all financial records \n7. Change user \n8. Download as Excel file \n9. Exit')
         
-        input_option = input(f'{Fore.YELLOW}Select an option: {Style.RESET_ALL}')
+        input_option = input(f'{Fore.YELLOW}Select an option:')
 
         try:
             input_option = int(input_option)
@@ -70,10 +72,11 @@ def main():
                 create_profile()
             
             if input_option == 2:
+                logging.info(f'Output all users')
                 for index, user in enumerate(user_db):
                     print(f'{index + 1}: {user['user_name']}')
             
-            if input_option == 8:
+            if input_option == 9:
                 logging.info('The program has completed its work.')
                 break
         except ValueError:
