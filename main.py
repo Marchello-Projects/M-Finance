@@ -33,22 +33,18 @@ def create_profile():
     user_password = getpass.getpass('Enter new password: ').strip()
     password_check = getpass.getpass('Please enter your password again: ').strip()
 
-    if not user_name or not user_password or not password_check:
-        logging.error('❌ Some fields are empty')
-        print('❌ Some fields are empty')
-
-    if not check_password(user_password, password_check):
+    if not check_password(user_password, password_check) or not user_password or not password_check or not user_name :
         logging.error('❌ Some fields are empty')
         print('❌ Passwords do not match')
-    
-    logging.info(f'✅ Profile created successfully! {user_name}')
-    print('✅ Profile created successfully!')
+    else:
+        logging.info(f'✅ Profile created successfully! {user_name}')
+        print('✅ Profile created successfully!')
 
-    hashed_password = hash_password(user_password)
-    user_db.append({'user_name': user_name, 'password': hashed_password})
+        hashed_password = hash_password(user_password)
+        user_db.append({'user_name': user_name, 'password': hashed_password})
 
-    current_user = user_db[0]['user_name']
-    hello_text = f'Hello {current_user}! Current date and time: {datetime.now()}'
+        current_user = user_db[0]['user_name']
+        hello_text = f'Hello {current_user}! Current date and time: {datetime.now()}'
 
 def main():
     while True:
@@ -60,10 +56,13 @@ def main():
         print(f"{Fore.BLUE}88   88   88           88        88 88    88 88.  .88 88    88 88.  ... 88.  ... ")
         print(f"{Fore.BLUE}dP   dP   dP           dP        dP dP    dP `88888P8 dP    dP `88888P' `88888P' ")
         print(f"{Fore.BLUE}oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo")
+        print()
         print(hello_text)
+        print()
         print('1. Create profile \n2. Show all profiles \n3. Create financial record \n4. Show all financial records \n5. Delete specific financial record \n6. Delete all financial records \n7. Change user \n8. Download as Excel file \n9. Exit')
-        
-        input_option = input(f'{Fore.YELLOW}Select an option:')
+        print()
+
+        input_option = input(f'{Fore.YELLOW}Select an option: {Style.RESET_ALL}')
 
         try:
             input_option = int(input_option)
