@@ -4,19 +4,26 @@ from datetime import datetime
 import logging
 import hashlib
 import getpass
+import os
 
 init(autoreset=True)
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+log_path = os.path.join(BASE_DIR, 'M-Finance.log')
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    filename=log_path,
+    filemode='w',
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+
+logging.info('☑️ The program has started working')
 
 hello_text = f'Hello! To get started, create a profile. Current date and time: {datetime.now()}'
 user_db = []
 current_user = None
-
-logging.basicConfig(
-    level=logging.DEBUG,
-    filename='./M-Finance.log',
-    filemode='w',
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
+current_username = None
 
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
@@ -27,24 +34,62 @@ def check_password(password1, password2):
 def create_profile():
     global user_db
     global current_user
+    global current_username
     global hello_text
 
-    user_name = input('Enter your first and last name: ')
-    user_password = getpass.getpass('Enter new password: ').strip()
-    password_check = getpass.getpass('Please enter your password again: ').strip()
+    username = input('Enter your first and last name: ')
+    user_password = getpass.getpass('Enter new password: ').lower()
+    password_check = getpass.getpass('Please enter your password again: ').lower()
 
-    if not check_password(user_password, password_check) or not user_password or not password_check or not user_name :
+    if not user_password or not password_check or not username:
         logging.error('❌ Some fields are empty')
         print('❌ Passwords do not match')
     else:
-        logging.info(f'✅ Profile created successfully! {user_name}')
-        print('✅ Profile created successfully!')
+        if not check_password(user_password, password_check):
+            logging.error('❌ Passwords do not match')
+            print('❌ Passwords do not match')
+        else:
+            logging.info(f'✅ Profile created successfully! {username}')
+            print('✅ Profile created successfully!')
 
-        hashed_password = hash_password(user_password)
-        user_db.append({'user_name': user_name, 'password': hashed_password})
+            hashed_password = hash_password(user_password)
+            user_db.append({'username': username, 'password': hashed_password})
 
-        current_user = user_db[0]['user_name']
-        hello_text = f'Hello {current_user}! Current date and time: {datetime.now()}'
+            current_user = user_db[0]
+            current_username = current_user['username']
+
+            hello_text = f'Hello {current_username}! Current date and time: {datetime.now()}'
+
+def change_user():
+    global current_user
+    global current_username
+    global hello_text
+
+    input_username = input('Enter username: ')
+    user_password = getpass.getpass('Enter password: ').lower()
+
+    hashed_password = hash_password(user_password)
+
+    for index, user in enumerate(user_db):
+        if user['username'] == input_username and user['password'] == hashed_password:
+            current_user = user_db[index]
+            current_username = current_user['username']
+
+            hello_text = f'Hello {current_username}! Current date and time: {datetime.now()}'
+
+            logging.info(f'✅ Account change was successful! {current_username}')
+            print('✅ Account change was successful!')
+
+            return
+            
+    logging.error('❌ Incorrect username or password')
+    print('❌ Incorrect username or password')
+    
+def create_financial_record():
+    global current_user
+
+    input_category = input('Please enter a category: ')
+    input_limit = input('Enter the limit: ')
 
 def main():
     while True:
@@ -68,15 +113,20 @@ def main():
             input_option = int(input_option)
 
             if input_option == 1:
+                logging.info(f'☑️ Create profile')
                 create_profile()
             
             if input_option == 2:
-                logging.info(f'Output all users')
+                logging.info(f'☑️ Output all users')
                 for index, user in enumerate(user_db):
-                    print(f'{index + 1}: {user['user_name']}')
+                    print(f'{index + 1}: {user['username']}')
+
+            if input_option == 7:
+                logging.info(f'☑️ Change user')
+                change_user()
             
             if input_option == 9:
-                logging.info('The program has completed its work.')
+                logging.info('☑️ The program has completed its work.')
                 break
         except ValueError:
             logging.error('❌ Invalid option')
