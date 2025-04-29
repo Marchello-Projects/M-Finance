@@ -43,7 +43,7 @@ def create_profile():
 
     if not user_password or not password_check or not username:
         logging.error('❌ Some fields are empty')
-        print('❌ Passwords do not match')
+        print('❌ Some fields are empty')
     else:
         if not check_password(user_password, password_check):
             logging.error('❌ Passwords do not match')
@@ -53,7 +53,7 @@ def create_profile():
             print('✅ Profile created successfully!')
 
             hashed_password = hash_password(user_password)
-            user_db.append({'username': username, 'password': hashed_password})
+            user_db.append({'username': username, 'password': hashed_password, 'expenses': {}})
 
             current_user = user_db[0]
             current_username = current_user['username']
@@ -88,10 +88,35 @@ def change_user():
 def create_financial_record():
     global current_user
 
-    input_category = input('Please enter a category: ')
-    input_limit = input('Enter the limit: ')
+    input_category = input('Please enter a category: ').lower()
+    input_sum = input('Enter the amount you spent: ')
+
+    if not input_category or not input_sum:
+        logging.error('❌ Some fields are empty')
+        print('❌ Some fields are empty')
+    else:
+        try:
+            input_sum = int(input_sum)
+
+            user_password = getpass.getpass('Enter password: ').lower()
+            hashed_password = hash_password(user_password)
+
+            if current_user['password'] == hashed_password:
+                current_user['expenses'].update({input_category: input_sum})
+
+                logging.info(f'✅ Added new category with expenses')
+                print('✅ Added new category with expenses')
+            else:
+                logging.error('❌ Incorrect password')
+                print('❌ Incorrect password')
+        except ValueError as e:
+            logging.error(f'❌ {e}')
+            print(f'❌ {e}')
+
 
 def main():
+    global current_user
+
     while True:
         print()
         print(f"{Fore.BLUE}8888ba.88ba            88888888b oo                                              ")
@@ -109,28 +134,38 @@ def main():
 
         input_option = input(f'{Fore.YELLOW}Select an option: {Style.RESET_ALL}')
 
-        try:
-            input_option = int(input_option)
-
-            if input_option == 1:
-                logging.info(f'☑️ Create profile')
-                create_profile()
+        if input_option == '1':
+            logging.info(f'☑️ Create profile')
+            create_profile()
             
-            if input_option == 2:
-                logging.info(f'☑️ Output all users')
-                for index, user in enumerate(user_db):
-                    print(f'{index + 1}: {user['username']}')
+        if input_option == '2':
+            logging.info(f'☑️ Output all users')
+            for index, user in enumerate(user_db):
+                print(f'{index + 1}: {user['username']} {user['expenses']}')                
 
-            if input_option == 7:
+        if input_option == '3':
+            if len(user_db) == 0:
+                print('Create a user to run this function!')
+            else:
+                logging.info(f'☑️ Creating a financial entry') 
+                create_financial_record()
+
+        if input_option == '4':
+            financial_records = current_user['expenses']
+
+            for key, value in financial_records.items():
+                print(f'{key}: {value}')
+
+        if input_option == '7':
+            if len(user_db) == 0:
+                print('Create a user to run this function!')
+            else:
                 logging.info(f'☑️ Change user')
                 change_user()
             
-            if input_option == 9:
-                logging.info('☑️ The program has completed its work.')
-                break
-        except ValueError:
-            logging.error('❌ Invalid option')
-            print('❌ Invalid option')
+        if input_option == '9':
+            logging.info('☑️ The program has completed its work.')
+            break
 
 if __name__ == '__main__':
     main()
