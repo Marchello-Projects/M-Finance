@@ -1,5 +1,5 @@
 from colorama import Fore, Style, init
-from openpyxl import workbook
+from openpyxl import Workbook
 from datetime import datetime
 import logging
 import hashlib
@@ -7,6 +7,7 @@ import getpass
 import os
 
 init(autoreset=True)
+financial_records = Workbook()
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 log_path = os.path.join(BASE_DIR, 'M-Finance.log')
@@ -30,6 +31,13 @@ def hash_password(password):
 
 def check_password(password1, password2):
     return password1 == password2
+
+def activate_func(log, func):
+    if len(user_db) == 0:
+        print('Create a user to run this function!')
+    else:
+        logging.info(log) 
+        func() 
 
 def create_profile():
     global user_db
@@ -113,6 +121,61 @@ def create_financial_record():
             logging.error(f'❌ {e}')
             print(f'❌ {e}')
 
+def delete_specific_financial_record():
+    global current_user
+
+    input_category = input('Please enter a category: ').lower()
+
+    if not input_category in current_user['expenses'] or not input_category:
+        logging.error('❌ There is no such category')
+        print('❌ There is no such category')       
+    else:
+        user_password = getpass.getpass('Enter password: ').lower()
+        hashed_password = hash_password(user_password)
+
+        if current_user['password'] == hashed_password:
+            logging.error('✅ Category removed!')
+            print('✅ Category removed!')   
+
+            categories = current_user['expenses']
+            categories.pop(input_category)
+        else:
+            logging.error('❌ Incorrect password')
+            print('❌ Incorrect password')
+
+def delete_all_financial_records():
+    global current_user
+
+    user_password = getpass.getpass('Enter password: ').lower()
+    hashed_password = hash_password(user_password)
+
+    if current_user['password'] == hashed_password:
+        logging.error('✅ Financial records have been deleted!')
+        print('✅ Financial records have been deleted!')   
+
+        current_user['expenses'].clear()
+    else:
+        logging.error('❌ Incorrect password')
+        print('❌ Incorrect password')
+
+def download_as_excel_file():
+    global current_user
+
+    user_password = getpass.getpass('Enter password: ').lower()
+    hashed_password = hash_password(user_password)
+
+    if current_user['password'] == hashed_password:
+        sheet = financial_records.active
+        sheet.title = 'Financial records'
+
+        for index, (key, value) in enumerate(current_user['expenses'].items()):
+            sheet[f'A{index + 1}'] = f'{key}: {value}'
+
+            financial_records.save("Financial recordss.xlsx")
+            print('The file is saved to the root project folder.')
+    else:
+        logging.error('❌ Incorrect password')
+        print('❌ Incorrect password')
 
 def main():
     global current_user
@@ -144,25 +207,27 @@ def main():
                 print(f'{index + 1}: {user['username']} {user['expenses']}')                
 
         if input_option == '3':
-            if len(user_db) == 0:
-                print('Create a user to run this function!')
-            else:
-                logging.info(f'☑️ Creating a financial entry') 
-                create_financial_record()
+            activate_func(log='☑️ Creating a financial entry', func=create_financial_record)
 
         if input_option == '4':
+            logging.info(f'☑️ Output all financial records')
             financial_records = current_user['expenses']
 
             for key, value in financial_records.items():
                 print(f'{key}: {value}')
 
+        if input_option == '5':
+            activate_func(log='☑️ Delete specific financial record', func=delete_specific_financial_record)
+
+        if input_option == '6':
+            activate_func(log='☑️ Delete all financial records', func=delete_all_financial_records)
+
         if input_option == '7':
-            if len(user_db) == 0:
-                print('Create a user to run this function!')
-            else:
-                logging.info(f'☑️ Change user')
-                change_user()
-            
+            activate_func(log='☑️ Change user', func=change_user)
+        
+        if input_option == '8':
+            activate_func(log='☑️ Download as Excel file', func=download_as_excel_file)
+
         if input_option == '9':
             logging.info('☑️ The program has completed its work.')
             break
